@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model SuperUser {
+  id               String        @id @unique @default(uuid())
+  username         String        @unique
+  password         String
+
+  @@map("super_users")
+}
+
+model User {
+  id               String        @id @unique @default(uuid())
+  email            String        @unique
+  password         String
+  name             String
+  avatar           String
+  active           Boolean       @default(false)
+  recover_password String        @default(uuid())
+  posts            Post[]
+  comments         Comment[]
+  post_likes       PostLike[]
+  comment_likes    CommentLike[]
+
+  @@map("users")
+}
+
+model Post {
+  id         String     @id @unique @default(uuid())
+  title      String
+  content    String?
+  image      String?
+  user       User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id    String
+  comments   Comment[]
+  post_likes PostLike[]
+
+  @@map("posts")
+}
+
+model Comment {
+  id            String        @id @unique @default(uuid())
+  content       String
+  post          Post          @relation(fields: [post_id], references: [id], onDelete: Cascade)
+  post_id       String
+  user          User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id       String
+  comment_likes CommentLike[]
+
+  @@map("comments")
+}
+
+model PostLike {
+  id      String @id @unique @default(uuid())
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id String
+  post    Post   @relation(fields: [post_id], references: [id], onDelete: Cascade)
+  post_id String
+
+  @@map("post_likes")
+}
+
+model CommentLike {
+  id         String  @id @unique @default(uuid())
+  user       User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id    String
+  comment    Comment @relation(fields: [comment_id], references: [id], onDelete: Cascade)
+  comment_id String
+
+  @@map("comment_likes")
+}
